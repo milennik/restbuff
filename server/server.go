@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -27,7 +28,18 @@ func Echo(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 	name := request.GetName()
-	result := &echo.EchoResponse{Message: "Hello " + name}
+	dataStr := request.GetData()
+
+	rawDecodedText, err := base64.StdEncoding.DecodeString(dataStr)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Decoded text: %s\n", rawDecodedText)
+
+	result := &echo.EchoResponse{
+		Message: "Hello " + name,
+		Data:    dataStr,
+	}
 	response, err := proto.Marshal(result)
 	if err != nil {
 		log.Fatalf("Unable to marshal response : %v", err)
@@ -36,7 +48,6 @@ func Echo(resp http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		return
 	}
-
 }
 
 func main() {

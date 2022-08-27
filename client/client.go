@@ -1,11 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/golang/protobuf/proto"
 	echo "github.com/milennik/restbuff/proto"
@@ -38,8 +41,28 @@ func makeRequest(request *echo.EchoRequest) *echo.EchoResponse {
 }
 
 func main() {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return
+	}
 
-	request := &echo.EchoRequest{Name: "Nikola"}
+	f, err := os.Open(cwd + "/client/client.go")
+	if err != nil {
+		return
+	}
+
+	reader := bufio.NewReader(f)
+	content, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return
+	}
+
+	encoded := base64.StdEncoding.EncodeToString(content)
+
+	request := &echo.EchoRequest{
+		Name: "Nikola",
+		Data: encoded,
+	}
 	resp := makeRequest(request)
 	fmt.Printf("Response from API is : %v\n", resp.GetMessage())
 }
